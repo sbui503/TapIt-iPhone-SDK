@@ -335,7 +335,6 @@
 - (NSDictionary *)mraidQueryState {
     NSDictionary *state = [NSDictionary dictionaryWithObjectsAndKeys:
                            @"inline", @"placementType",
-                           @"", @"",
                            nil];
     return state;
 }
@@ -348,6 +347,10 @@
     // if state == default, hide then set state => hide
     // else set state => default
     [self hideCloseButton];
+
+    if (self.delegate && [self.delegate respondsToSelector:@selector(tapitBannerAdViewActionWillFinish:)]) {
+        [self.delegate tapitBannerAdViewActionWillFinish:self];
+    }
     
     [self resize:self.originalFrame completion:^{
 //        UIWindow *keyWindow = [UIApplication sharedApplication].keyWindow;
@@ -359,6 +362,9 @@
         self.adView.mraidState = @"default";
         [self.adView syncMraidState];
         [self.adView fireMraidEvent:@"stateChange" withParams:self.adView.mraidState];
+        if (self.delegate && [self.delegate respondsToSelector:@selector(tapitBannerAdViewActionDidFinish:)]) {
+            [self.delegate tapitBannerAdViewActionDidFinish:self];
+        }
         [self startBannerRotationTimerForNormalOrError:NO];
     }];
 }
@@ -371,6 +377,10 @@
     [self stopTimer];
     if ([self.adView.mraidState isEqualToString:@"expanded"]) {
         return;
+    }
+    
+    if (self.delegate && [self.delegate respondsToSelector:@selector(tapitBannerAdViewActionShouldBegin:willLeaveApplication:)]) {
+        [self.delegate tapitBannerAdViewActionShouldBegin:self willLeaveApplication:NO];
     }
     
     UIWindow *keyWindow = [UIApplication sharedApplication].keyWindow;
@@ -452,7 +462,6 @@
 - (void)closeTapped:(id)sender {
     NSLog(@"close tapped!");
     [self mraidClose];
-    [self startBannerRotationTimerForNormalOrError:NO];
 }
 
 
