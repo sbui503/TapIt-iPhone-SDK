@@ -9,6 +9,10 @@
 #import <UIKit/UIKit.h>
 #import <CoreLocation/CoreLocation.h>
 
+//// Include this file in your App Delegate if you're not using AdMob,
+//// but are getting AdMob related errors during compile time
+//#import "TapItAdMobStubs.h"
+
 @interface AppDelegate : UIResponder <UIApplicationDelegate, CLLocationManagerDelegate>
 
 @property (strong, nonatomic) UIWindow *window;

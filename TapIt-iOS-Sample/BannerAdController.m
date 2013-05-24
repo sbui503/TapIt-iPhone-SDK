@@ -12,8 +12,8 @@
 
 // This is the zone id for the BannerAd Example
 // go to http://ads.tapit.com/ to get one for your app.
-#define ZONE_ID @"7268" // for example use only, don't use this zone in your app!
-
+//#define ZONE_ID @"7268" // for example use only, don't use this zone in your app!
+#define ZONE_ID @"24019"
 
 @implementation BannerAdController
 
@@ -59,7 +59,8 @@
     
     // customize the request...
     NSDictionary *params = [NSDictionary dictionaryWithObjectsAndKeys:
-//                            @"test", @"mode", // enable test mode to test banner ads in your app
+                            @"test", @"mode", // enable test mode to test banner ads in your app
+                            @"134308", @"cid",
                             nil];
     TapItRequest *request = [TapItRequest requestWithAdZone:ZONE_ID andCustomParameters:params];
     

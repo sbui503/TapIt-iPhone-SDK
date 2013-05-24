@@ -263,48 +263,6 @@
         <image name="second.png" width="30" height="30"/>
         <image name="third.png" width="22" height="22"/>
     </resources>
-    <classes>
-        <class className="AdMobController" superclassName="UIViewController">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/AdMobController.h"/>
-            <relationships>
-                <relationship kind="action" name="loadInterstitial:"/>
-                <relationship kind="action" name="showInterstital:"/>
-                <relationship kind="outlet" name="activityIndicator" candidateClass="UIActivityIndicatorView"/>
-                <relationship kind="outlet" name="loadButton" candidateClass="UIButton"/>
-                <relationship kind="outlet" name="showButton" candidateClass="UIButton"/>
-            </relationships>
-        </class>
-        <class className="AdPromptDemoController" superclassName="UIViewController">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/AdPromptDemoController.h"/>
-            <relationships>
-                <relationship kind="action" name="preLoadAdPrompt:"/>
-                <relationship kind="action" name="showAdPrompt:"/>
-                <relationship kind="action" name="simpleExample:"/>
-                <relationship kind="outlet" name="preloadButton" candidateClass="UIButton"/>
-            </relationships>
-        </class>
-        <class className="BannerAdController" superclassName="UIViewController">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/BannerAdController.h"/>
-            <relationships>
-                <relationship kind="action" name="cancelLoad:"/>
-                <relationship kind="action" name="hideBanner:"/>
-                <relationship kind="outlet" name="tapitAd" candidateClass="TapItBannerAdView"/>
-            </relationships>
-        </class>
-        <class className="InterstitialController" superclassName="UIViewController">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/InterstitialController.h"/>
-            <relationships>
-                <relationship kind="action" name="loadInterstitial:"/>
-                <relationship kind="action" name="showInterstitial:"/>
-                <relationship kind="outlet" name="activityIndicator" candidateClass="UIActivityIndicatorView"/>
-                <relationship kind="outlet" name="loadButton" candidateClass="UIButton"/>
-                <relationship kind="outlet" name="showButton" candidateClass="UIButton"/>
-            </relationships>
-        </class>
-        <class className="TapItBannerAdView" superclassName="UIView">
-            <source key="sourceIdentifier" type="project" relativePath="./Classes/TapItBannerAdView.h"/>
-        </class>
-    </classes>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
         <simulatedStatusBarMetrics key="statusBar" statusBarStyle="blackTranslucent"/>
         <simulatedOrientationMetrics key="orientation"/>

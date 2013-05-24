@@ -106,6 +106,7 @@ typedef enum {
                                           cancelButtonTitle:self.declineString
                                           otherButtonTitles:self.callToAction, nil];
     [alert show];
+    [self retain];
     [alert release];
     state = TapItAdPromptStateShown;
     
@@ -170,7 +171,6 @@ typedef enum {
         }
         [self release];
     }
-    
 }
 
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
@@ -286,7 +286,7 @@ typedef enum {
 
 - (void)didReceiveData:(NSDictionary *)data {
 //    NSLog(@"Received data: %@", data);
-    self.clickUrl = [data objectForKey:@"clickurl"];
+    self.clickUrl = [NSString stringWithString:[data objectForKey:@"clickurl"]];
 //    self.clickUrl = @"http://itunes.apple.com/us/app/tiny-village/id453126021?mt=8#";
     
     self.title = [data objectForKey:@"adtitle"];

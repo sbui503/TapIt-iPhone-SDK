@@ -93,7 +93,7 @@ static Class inAppStoreVCClass;
 
 - (void)loadUrl:(NSURL *)theUrl {
     // test urls...
-//    theUrl = [NSURL URLWithString:@"http://www.tapit.com/"];
+    theUrl = [NSURL URLWithString:@"http://www.tapit.com/"];
 //    theUrl = [NSURL URLWithString:@"http://itunes.apple.com/us/app/tiny-village/id453126021?mt=8#"];
 //    theUrl = [NSURL URLWithString:@"https://itunes.apple.com/ua/app/dont-touch/id372842596?mt=8"];
     

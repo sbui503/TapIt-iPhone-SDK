@@ -75,23 +75,13 @@
         return;
     }
     
-    CGSize size = [UIScreen mainScreen].bounds.size;
-    UIApplication *application = [UIApplication sharedApplication];
-    if (UIInterfaceOrientationIsLandscape(orientation))
-    {
-        // swap width <--> height
-        size = CGSizeMake(size.height, size.width);
-    }
-    if (application.statusBarHidden == NO)
-    {
-        size.height -= MIN(application.statusBarFrame.size.width, application.statusBarFrame.size.height);
-    }
-    
+    CGRect frame = TapItApplicationFrame(orientation);
+
     CGFloat x = 0, y = 0;
     CGFloat w = self.adView.frame.size.width, h = self.adView.frame.size.height;
     
-    x = size.width/2 - self.adView.frame.size.width/2;
-    y = size.height/2 - self.adView.frame.size.height/2;
+    x = frame.size.width/2 - self.adView.frame.size.width/2;
+    y = frame.size.height/2 - self.adView.frame.size.height/2;
     
     self.adView.center = self.view.center;
     

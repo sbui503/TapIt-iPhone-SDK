@@ -99,10 +99,9 @@
     
     TapItJSONDecoder *decoder = [[TapItJSONDecoder alloc] initWithParseOptions:JKParseOptionStrict];
     NSData *jsonData = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
-    NSMutableDictionary *deserializedData = [decoder objectWithData:jsonData error:&error];
+    NSDictionary *deserializedData = [decoder objectWithData:jsonData error:&error];
     [decoder release];
-//    NSMutableDictionary *deserializedData = [jsonString objectFromJSONStringWithParseOptions:JKParseOptionStrict error:&error];
-//    NSMutableDictionary *deserializedData = [[JSONDecoder alloc] mutableObjectWithUTF8String:[jsonString UTF8String] length:[jsonString length] error:&error];
+
     if (error) {
         NSString *errStr;
         if (!self.currentRequest.rawResults) {
@@ -127,6 +126,7 @@
         return;
     }
     
+//    NSString *adType = [NSString stringWithString:[deserializedData objectForKey:@"type"]]; // html banner ormma offerwall video
     NSString *adType = [deserializedData objectForKey:@"type"]; // html banner ormma offerwall video
     NSString *adHeight = [deserializedData objectForKey:@"adHeight"];
     int height = [adHeight intValue];
@@ -159,6 +159,7 @@
         [delegate adView:nil didFailToReceiveAdWithError:error];
         return;
     }
+//    [deserializedData autorelease];
 }
 
 #pragma mark -

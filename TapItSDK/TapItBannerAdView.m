@@ -16,7 +16,7 @@
 #import "TapItBrowserController.h"
 #import "TapItRequest.h"
 
-@interface TapItBannerAdView () <TapItAdManagerDelegate, TapItBrowserControllerDelegate> {
+@interface TapItBannerAdView () <TapItAdManagerDelegate, TapItBrowserControllerDelegate, TapItMraidDelegate> {
     NSTimer *timer;
     BOOL isServingAds;
     UIActivityIndicatorView *loadingSpinner;
@@ -26,7 +26,11 @@
 @property (retain, nonatomic) TapItAdView *adView;
 @property (retain, nonatomic) TapItAdManager *adManager;
 @property (assign, nonatomic) CGRect originalFrame;
+@property (assign, nonatomic) UIView *originalSuperView;
 @property (retain, nonatomic) TapItBrowserController *browserController;
+@property (retain, nonatomic) UIButton *closeButton;
+
+
 
 - (void)commonInit;
 - (void)openURLInFullscreenBrowser:(NSURL *)url;
@@ -40,7 +44,7 @@
 
 @implementation TapItBannerAdView
 
-@synthesize originalFrame, adView, adRequest, adManager, animated, autoReposition, showLoadingOverlay, delegate, hideDirection, browserController, presentingController, shouldReloadAfterTap;
+@synthesize originalFrame, adView, adRequest, adManager, originalSuperView, animated, autoReposition, showLoadingOverlay, delegate, hideDirection, browserController, presentingController, shouldReloadAfterTap;
 
 - (void)commonInit {
     self.originalFrame = [self frame];
@@ -92,11 +96,19 @@
 }
 
 - (void)repositionToInterfaceOrientation:(UIInterfaceOrientation)orientation {
+    if (self.originalSuperView) {
+        // adview is attached to window, do orientation transforms manually
+        [self.adView repositionToInterfaceOrientation:orientation];
+        return;
+    }
+    
     if (!self.autoReposition) {
         // don't reposition banner, someone else will do it...
         return;
     }
     
+    //TODO notify AdView of orientation change
+
     CGSize size = [UIScreen mainScreen].bounds.size;
     UIApplication *application = [UIApplication sharedApplication];
     if (UIInterfaceOrientationIsLandscape(orientation))
@@ -153,6 +165,31 @@
     return hiddenFrame;
 }
 
+- (void)resize:(CGRect)frame completion:(void(^)())completionBlock {
+    NSLog(@"Banner Resize");
+    
+    CGRect innerFrame = CGRectMake(0, 0, frame.size.width, frame.size.height);
+    if (self.animated) {
+        [UIView animateWithDuration:0.3
+                              delay:0.0
+                            options:UIViewAnimationOptionTransitionNone
+                         animations:^{
+                             self.adView.frame = innerFrame;
+                             self.frame = frame;
+                         }
+                         completion:^(BOOL finished){
+                             if (completionBlock) {
+                                 completionBlock();
+                             }
+                         }
+         ];
+    }
+    else {
+        self.adView.frame = innerFrame;
+        self.frame = frame;
+    }
+}
+
 - (void)hide {
     if (!self.adView) {
         // no ad, hide the container
@@ -181,6 +218,7 @@
                          }
                          completion:^(BOOL finished){ 
                              self.alpha = 0.0;
+                             [self.adView setIsVisible:NO];
                          }
          ];
     }
@@ -188,6 +226,7 @@
         // just move it
         self.adView.frame = avFrame;
         self.alpha = 0.0;
+        [self.adView setIsVisible:NO];
     }
 }
 #pragma mark -
@@ -205,6 +244,8 @@
     TapItAdView *oldAd = [self.adView retain];
     self.alpha = 1.0;
     self.adView = theAdView;
+    self.adView.mraidDelegate = self;
+    [self.adView setIsVisible:YES];
     
     if (self.animated) {
 //        // mask the ad area so we can slide it away
@@ -272,6 +313,7 @@
 }
 
 - (void)requestAnotherAd {
+    [self mraidClose];
     [self cancelAds];
     [self startServingAdsForRequest:self.adRequest];
 }
@@ -285,6 +327,141 @@
 
 - (void)pause {
     [self cancelAds];
+}
+
+#pragma mark -
+#pragma mark MRAID delegate methods
+
+- (NSDictionary *)mraidQueryState {
+    NSDictionary *state = [NSDictionary dictionaryWithObjectsAndKeys:
+                           @"inline", @"placementType",
+                           @"", @"",
+                           nil];
+    return state;
+}
+
+- (UIViewController *)mraidPresentingViewController {
+    return self.presentingController;
+}
+
+- (void)mraidClose {
+    // if state == default, hide then set state => hide
+    // else set state => default
+    [self hideCloseButton];
+    
+    [self resize:self.originalFrame completion:^{
+//        UIWindow *keyWindow = [UIApplication sharedApplication].keyWindow;
+//        self.frame = [keyWindow convertRect:self.frame toView:self.originalSuperView];
+        [originalSuperView addSubview:self];
+        self.frame = self.originalFrame;
+        self.originalSuperView = nil;
+        self.adView.frame = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
+        self.adView.mraidState = @"default";
+        [self.adView syncMraidState];
+        [self.adView fireMraidEvent:@"stateChange" withParams:self.adView.mraidState];
+        [self startBannerRotationTimerForNormalOrError:NO];
+    }];
+}
+
+- (void)mraidAllowOrientationChange:(BOOL)isOrientationChangeAllowed andForceOrientation:(TapItMraidForcedOrientation)forcedOrientation {
+    
+}
+
+- (void)mraidResize:(CGRect)frame withUrl:(NSURL *)url isModal:(BOOL)isModal useCustomClose:(BOOL)useCustomClose {
+    [self stopTimer];
+    if ([self.adView.mraidState isEqualToString:@"expanded"]) {
+        return;
+    }
+    
+    UIWindow *keyWindow = [UIApplication sharedApplication].keyWindow;
+    if (self.superview != keyWindow) {
+        // move the ad to the top of the view stack so we can show it above everything
+        
+        
+        CGFloat angle = 0.0;
+        
+        switch (TapItInterfaceOrientation()) {
+            case UIInterfaceOrientationPortraitUpsideDown: angle = M_PI; break;
+            case UIInterfaceOrientationLandscapeLeft: angle = -M_PI_2; break;
+            case UIInterfaceOrientationLandscapeRight: angle = M_PI_2; break;
+            default: break;
+        }
+        
+        self.adView.transform = CGAffineTransformMakeRotation(angle);
+
+        
+        
+        
+        
+        self.originalSuperView = self.superview;
+        self.originalFrame = self.frame;
+        self.frame = [self.superview convertRect:self.frame toView:keyWindow];
+        [keyWindow addSubview:self];
+    }
+    
+    
+
+    
+    [self resize:frame completion:^{
+        if (isModal) {
+            self.adView.mraidState = @"expanded";
+        }
+        else {
+            self.adView.mraidState = @"resized";
+        }
+        [self.adView syncMraidState];
+        [self.adView fireMraidEvent:@"stateChange" withParams:self.adView.mraidState];
+
+        if (!useCustomClose) {
+            [self showCloseButton];
+        }
+    }];
+}
+
+- (void)mraidOpen:(NSString *)urlStr {
+    
+}
+
+- (void)mraidUseCustomCloseButton:(BOOL)useCustomCloseButton {
+    
+}
+
+- (void)showCloseButton {
+    if (self.closeButton) {
+        return;
+    }
+    UIImage *closeButtonBackground = [UIImage imageNamed:@"TapIt.bundle/interstitial_close_button.png"];
+    self.closeButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    NSInteger buttonY = 0;
+    UIApplication *app = [UIApplication sharedApplication];
+    if (!app.statusBarHidden) {
+        buttonY = 22;
+    }
+    
+    self.closeButton.frame = CGRectMake(0, buttonY, 50, 50);
+    self.closeButton.imageView.contentMode = UIViewContentModeCenter;
+    [self.closeButton setImage:closeButtonBackground forState:UIControlStateNormal];
+    
+    CGRect frame = self.closeButton.frame;
+    self.closeButton.frame = frame;
+    [self.closeButton addTarget:self action:@selector(closeTapped:) forControlEvents:UIControlEventTouchUpInside];
+    [self addSubview:self.closeButton];
+    [self bringSubviewToFront:self.closeButton];
+}
+
+- (void)closeTapped:(id)sender {
+    NSLog(@"close tapped!");
+    [self mraidClose];
+    [self startBannerRotationTimerForNormalOrError:NO];
+}
+
+
+- (void)hideCloseButton {
+    if (!self.closeButton) {
+        return;
+    }
+    [self.closeButton removeFromSuperview];
+    self.closeButton = nil;
 }
 
 #pragma mark -
@@ -389,7 +566,7 @@
 #pragma mark TapItBrowserController methods
 
 - (void)openURLInFullscreenBrowser:(NSURL *)url {
-//    NSLog(@"Banner->openURLInFullscreenBrowser: %@", url);
+    NSLog(@"Banner->openURLInFullscreenBrowser: %@", url);
     [self stopTimer];
     self.browserController = [[[TapItBrowserController alloc] init] autorelease];
     self.browserController.delegate = self;
@@ -468,6 +645,10 @@
 }
 
 #pragma mark -
+
+- (void)layoutSubviews {
+    NSLog(@"layoutSubviews");
+}
 
 - (void)dealloc {
     [self cancelAds];
