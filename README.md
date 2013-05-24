@@ -1,3 +1,6 @@
+*** This branch is experimental; don't expect anything to work yet! ***
+
+
 TapIt iOS SDK
 =============
 
