@@ -365,7 +365,7 @@
         if (self.delegate && [self.delegate respondsToSelector:@selector(tapitBannerAdViewActionDidFinish:)]) {
             [self.delegate tapitBannerAdViewActionDidFinish:self];
         }
-        [self startBannerRotationTimerForNormalOrError:NO];
+        [self startBannerRotationTimerForNormalOrError:YES];
     }];
 }
 
@@ -433,7 +433,12 @@
 }
 
 - (void)mraidUseCustomCloseButton:(BOOL)useCustomCloseButton {
-    
+    if (useCustomCloseButton) {
+        [self hideCloseButton];
+    }
+    else {
+        [self showCloseButton];
+    }
 }
 
 - (void)showCloseButton {
@@ -442,13 +447,11 @@
     }
     UIImage *closeButtonBackground = [UIImage imageNamed:@"TapIt.bundle/interstitial_close_button.png"];
     self.closeButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    NSInteger buttonY = 0;
-    UIApplication *app = [UIApplication sharedApplication];
-    if (!app.statusBarHidden) {
-        buttonY = 22;
-    }
+//    self.closeButton.backgroundColor = [UIColor redColor];
     
-    self.closeButton.frame = CGRectMake(0, buttonY, 50, 50);
+    CGRect appFrame = TapItApplicationFrame(TapItInterfaceOrientation());
+    
+    self.closeButton.frame = CGRectMake(appFrame.size.width - 50, 0, 50, 50);
     self.closeButton.imageView.contentMode = UIViewContentModeCenter;
     [self.closeButton setImage:closeButtonBackground forState:UIControlStateNormal];
     

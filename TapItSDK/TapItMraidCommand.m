@@ -24,6 +24,7 @@
             [sharedMap setObject:[TapItMraidExpandCommand class] forKey:[TapItMraidExpandCommand commandName]];
             [sharedMap setObject:[TapItMraidOpenCommand class] forKey:[TapItMraidOpenCommand commandName]];
             [sharedMap setObject:[TapItMraidCloseCommand class] forKey:[TapItMraidCloseCommand commandName]];
+            [sharedMap setObject:[TapItMraidCustomCloseButtonCommand class] forKey:[TapItMraidCustomCloseButtonCommand commandName]];
             [sharedMap setObject:[TapItMraidSetOrientationPropertiesCommand class] forKey:[TapItMraidSetOrientationPropertiesCommand commandName]];
             [sharedMap setObject:[TapItMraidLogCommand class] forKey:[TapItMraidLogCommand commandName]];
         }
@@ -145,10 +146,11 @@
 @implementation TapItMraidCustomCloseButtonCommand
 
 + (NSString *)commandName {
-    return @"customClose";
+    return @"useCustomClose";
 }
 
 - (void)executeWithParams:(NSDictionary *)params andDelegate:(id<TapItMraidDelegate>)delegate {
+    [delegate mraidUseCustomCloseButton:YES];
 }
 
 @end

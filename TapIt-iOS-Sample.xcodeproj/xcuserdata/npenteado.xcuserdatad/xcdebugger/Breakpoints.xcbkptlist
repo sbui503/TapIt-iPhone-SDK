@@ -8,11 +8,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "TapItSDK/TapItMraidCommand.m"
-         timestampString = "391126001.986"
+         timestampString = "391132296.38215"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "88"
-         endingLineNumber = "88"
+         startingLineNumber = "89"
+         endingLineNumber = "89"
          landmarkName = "-executeWithParams:andDelegate:"
          landmarkType = "5">
       </FileBreakpoint>
@@ -34,11 +34,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "TapItSDK/TapItMraidCommand.m"
-         timestampString = "391126001.986"
+         timestampString = "391132296.38215"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "291"
-         endingLineNumber = "291"
+         startingLineNumber = "293"
+         endingLineNumber = "293"
          landmarkName = "-eventEditViewController:didCompleteWithAction:"
          landmarkType = "5">
       </FileBreakpoint>
@@ -47,11 +47,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "TapItSDK/TapItMraidCommand.m"
-         timestampString = "391126001.986"
+         timestampString = "391132296.38215"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "277"
-         endingLineNumber = "277"
+         startingLineNumber = "279"
+         endingLineNumber = "279"
          landmarkName = "-executeWithParams:andDelegate:"
          landmarkType = "5">
       </FileBreakpoint>
@@ -60,11 +60,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "TapItSDK/TapItMraidCommand.m"
-         timestampString = "391126001.986"
+         timestampString = "391132296.38215"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "282"
-         endingLineNumber = "282"
+         startingLineNumber = "284"
+         endingLineNumber = "284"
          landmarkName = "-executeWithParams:andDelegate:"
          landmarkType = "5">
       </FileBreakpoint>
@@ -73,11 +73,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "TapItSDK/TapItMraidCommand.m"
-         timestampString = "391126001.986"
+         timestampString = "391132296.38215"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "266"
-         endingLineNumber = "266"
+         startingLineNumber = "268"
+         endingLineNumber = "268"
          landmarkName = "-executeWithParams:andDelegate:"
          landmarkType = "5">
       </FileBreakpoint>
@@ -86,11 +86,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "TapItSDK/TapItMraidCommand.m"
-         timestampString = "391126001.986"
+         timestampString = "391132296.38215"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "247"
-         endingLineNumber = "247"
+         startingLineNumber = "249"
+         endingLineNumber = "249"
          landmarkName = "-executeWithParams:andDelegate:"
          landmarkType = "5">
       </FileBreakpoint>
@@ -99,11 +99,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "TapItSDK/TapItBannerAdView.m"
-         timestampString = "391131566.549691"
+         timestampString = "391132925.899632"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "464"
-         endingLineNumber = "464"
+         startingLineNumber = "467"
+         endingLineNumber = "467"
          landmarkName = "-closeTapped:"
          landmarkType = "5">
       </FileBreakpoint>
@@ -112,11 +112,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "TapItSDK/TapItMraidCommand.m"
-         timestampString = "391126001.986"
+         timestampString = "391132296.38215"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "71"
-         endingLineNumber = "71"
+         startingLineNumber = "72"
+         endingLineNumber = "72"
          landmarkName = "-executeWithParams:andDelegate:"
          landmarkType = "5">
       </FileBreakpoint>
@@ -131,6 +131,19 @@
          startingLineNumber = "368"
          endingLineNumber = "368"
          landmarkName = "-mraidClose"
+         landmarkType = "5">
+      </FileBreakpoint>
+      <FileBreakpoint
+         shouldBeEnabled = "Yes"
+         ignoreCount = "0"
+         continueAfterRunningActions = "No"
+         filePath = "TapItSDK/TapItMraidCommand.m"
+         timestampString = "391132334.2884"
+         startingColumnNumber = "9223372036854775807"
+         endingColumnNumber = "9223372036854775807"
+         startingLineNumber = "153"
+         endingLineNumber = "153"
+         landmarkName = "-executeWithParams:andDelegate:"
          landmarkType = "5">
       </FileBreakpoint>
    </FileBreakpoints>
