@@ -94,10 +94,10 @@
         [self.tapitDelegate didLoadAdView:self];
     }
     self.isLoaded = YES;
+    [self fireMraidEvent:@"ready" withParams:nil];
     self.mraidState = @"default";
     [self syncMraidState];
     [self fireMraidEvent:@"stateChange" withParams:self.mraidState];
-    [self fireMraidEvent:@"ready" withParams:nil];
 }
 
 - (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error {
@@ -323,14 +323,15 @@
         // fire size change
         CGRect frame = TapItApplicationFrame(orientation);
         NSString *params = [NSString stringWithFormat:@"[%i, %i]", (int)frame.size.width, (int)frame.size.height];
-        if ([@"expanded" isEqualToString:self.mraidState]) {
-            // resize the adview
-            self.superview.frame = frame;
-            self.bounds = CGRectMake(0,0,frame.size.width,frame.size.height);
-        }
+//        if ([@"expanded" isEqualToString:self.mraidState]) {
+//            // resize the adview
+//            self.superview.frame = frame;
+//            self.bounds = CGRectMake(0,0,frame.size.width,frame.size.height);
+//        }
         [self fireMraidEvent:@"sizeChange" withParams:params];
     }
 }
+
 
 #pragma mark -
 

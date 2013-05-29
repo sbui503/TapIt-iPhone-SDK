@@ -24,8 +24,10 @@
 
 @property (retain, nonatomic) TapItRequest *adRequest;
 @property (retain, nonatomic) TapItAdView *adView;
+@property (retain, nonatomic) TapItAdView *secondAdView;
 @property (retain, nonatomic) TapItAdManager *adManager;
 @property (assign, nonatomic) CGRect originalFrame;
+@property (assign, nonatomic) CGAffineTransform originalTransform;
 @property (assign, nonatomic) UIView *originalSuperView;
 @property (retain, nonatomic) TapItBrowserController *browserController;
 @property (retain, nonatomic) UIButton *closeButton;
@@ -44,7 +46,7 @@
 
 @implementation TapItBannerAdView
 
-@synthesize originalFrame, adView, adRequest, adManager, originalSuperView, animated, autoReposition, showLoadingOverlay, delegate, hideDirection, browserController, presentingController, shouldReloadAfterTap;
+@synthesize originalFrame, originalTransform, adView, secondAdView, adRequest, adManager, originalSuperView, animated, autoReposition, showLoadingOverlay, delegate, hideDirection, browserController, presentingController, shouldReloadAfterTap;
 
 - (void)commonInit {
     self.originalFrame = [self frame];
@@ -244,6 +246,7 @@
     TapItAdView *oldAd = [self.adView retain];
     self.alpha = 1.0;
     self.adView = theAdView;
+//    self.adView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     self.adView.mraidDelegate = self;
     [self.adView setIsVisible:YES];
     
@@ -358,6 +361,7 @@
         [originalSuperView addSubview:self];
         self.frame = self.originalFrame;
         self.originalSuperView = nil;
+        self.adView.transform = self.originalTransform;
         self.adView.frame = CGRectMake(0, 0, self.frame.size.width, self.frame.size.height);
         self.adView.mraidState = @"default";
         [self.adView syncMraidState];
@@ -397,15 +401,11 @@
             default: break;
         }
         
+        self.originalFrame = self.frame;
+        self.originalTransform = self.adView.transform;
         self.adView.transform = CGAffineTransformMakeRotation(angle);
 
-        
-        
-        
-        
         self.originalSuperView = self.superview;
-        self.originalFrame = self.frame;
-        self.frame = [self.superview convertRect:self.frame toView:keyWindow];
         [keyWindow addSubview:self];
     }
     
@@ -429,7 +429,7 @@
 }
 
 - (void)mraidOpen:(NSString *)urlStr {
-    
+    [self openURLInFullscreenBrowser:[NSURL URLWithString:urlStr]];
 }
 
 - (void)mraidUseCustomCloseButton:(BOOL)useCustomCloseButton {
@@ -442,23 +442,22 @@
 }
 
 - (void)showCloseButton {
-    if (self.closeButton) {
-        return;
+    if (!self.closeButton) {
+
+        UIImage *closeButtonBackground = [UIImage imageNamed:@"TapIt.bundle/interstitial_close_button.png"];
+        self.closeButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        //    self.closeButton.backgroundColor = [UIColor redColor];
+        
+        self.closeButton.imageView.contentMode = UIViewContentModeCenter;
+        [self.closeButton setImage:closeButtonBackground forState:UIControlStateNormal];
+        
+        [self.closeButton addTarget:self action:@selector(closeTapped:) forControlEvents:UIControlEventTouchUpInside];
+        [self.adView addSubview:self.closeButton];
     }
-    UIImage *closeButtonBackground = [UIImage imageNamed:@"TapIt.bundle/interstitial_close_button.png"];
-    self.closeButton = [UIButton buttonWithType:UIButtonTypeCustom];
-//    self.closeButton.backgroundColor = [UIColor redColor];
-    
+
     CGRect appFrame = TapItApplicationFrame(TapItInterfaceOrientation());
-    
     self.closeButton.frame = CGRectMake(appFrame.size.width - 50, 0, 50, 50);
-    self.closeButton.imageView.contentMode = UIViewContentModeCenter;
-    [self.closeButton setImage:closeButtonBackground forState:UIControlStateNormal];
-    
-    CGRect frame = self.closeButton.frame;
-    self.closeButton.frame = frame;
-    [self.closeButton addTarget:self action:@selector(closeTapped:) forControlEvents:UIControlEventTouchUpInside];
-    [self addSubview:self.closeButton];
+
     [self bringSubviewToFront:self.closeButton];
 }
 
@@ -660,6 +659,26 @@
 
 - (void)layoutSubviews {
     NSLog(@"layoutSubviews");
+    if ([@"expanded" isEqualToString:self.adView.mraidState]) {
+        self.adView.backgroundColor = [UIColor redColor];
+        self.backgroundColor = [UIColor greenColor]; 
+        NSLog(@"we should resize adview");
+//        UIInterfaceOrientation orientation = TapItInterfaceOrientation();
+//        CGRect frame = TapItApplicationFrame(orientation);
+//        self.adView.frame = frame;
+        NSLog(@"frame is: %@", NSStringFromCGRect(self.frame));
+        NSLog(@"bounds is: %@", NSStringFromCGRect(self.bounds));
+        NSLog(@"adview frame is: %@", NSStringFromCGRect(self.adView.frame));
+        NSLog(@"adview bounds is: %@", NSStringFromCGRect(self.adView.bounds));
+//        self.adView.frame = self.bounds;
+        CGRect frame = self.bounds;
+//        CGFloat tmp = frame.origin.x;
+//        frame.origin.x = frame.origin.y;
+//        frame.origin.y = tmp;
+        self.adView.frame = frame;
+        NSLog(@"new adview frame is: %@", NSStringFromCGRect(self.adView.frame));
+        NSLog(@"new adview bounds is: %@", NSStringFromCGRect(self.adView.bounds));
+    }
 }
 
 - (void)dealloc {
