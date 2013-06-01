@@ -14,3 +14,4 @@ UIWindow *TapItKeyWindow();
 CGFloat TapItStatusBarHeight();
 CGRect TapItApplicationFrame(UIInterfaceOrientation orientation);
 CGRect TapItScreenBounds(UIInterfaceOrientation orientation);
+CGAffineTransform TapItRotationTransformForOrientation(UIInterfaceOrientation orientation);

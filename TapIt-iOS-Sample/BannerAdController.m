@@ -56,6 +56,7 @@
 
     // set the parent controller for modal browser that loads when user taps ad
 //    self.tapitAd.presentingController = self; // only needed if tapping banner doesn't load modal browser properly
+    self.tapitAd.presentingController = self.tabBarController;
     
     // customize the request...
     NSDictionary *params = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -91,10 +92,9 @@
     [self.tapitAd cancelAds];
 }
 
-- (void)viewWillAppear:(BOOL)animated {
-    [self.tapitAd resume];
+- (void)viewDidAppear:(BOOL)animated {
+//    [self.tapitAd resume];
 }
-
 - (void)viewWillDisappear:(BOOL)animated {
     [self.tapitAd pause];
 }

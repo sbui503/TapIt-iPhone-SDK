@@ -21,7 +21,8 @@
         self.delegate = self; // UIWebViewDelegate
         self.isLoaded = NO;
         self.interceptPageLoads = YES;
-        self.mraidState = @"loading";
+        self.mraidState = TAPIT_MRAID_STATE_LOADING;
+//        self.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
         
         if ([self respondsToSelector:@selector(setAllowsInlineMediaPlayback:)]) {
             [self setAllowsInlineMediaPlayback:YES];
@@ -94,10 +95,10 @@
         [self.tapitDelegate didLoadAdView:self];
     }
     self.isLoaded = YES;
-    [self fireMraidEvent:@"ready" withParams:nil];
-    self.mraidState = @"default";
+    [self fireMraidEvent:TAPIT_MRAID_EVENT_READY withParams:nil];
+    self.mraidState = TAPIT_MRAID_STATE_DEFAULT;
     [self syncMraidState];
-    [self fireMraidEvent:@"stateChange" withParams:self.mraidState];
+    [self fireMraidEvent:TAPIT_MRAID_EVENT_STATECHANGE withParams:self.mraidState];
 }
 
 - (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error {
@@ -158,11 +159,11 @@
 #pragma mark -
 #pragma mark MRAID
 
-- (void)didResize:(BOOL)isModal {
-    if (self.isMRAID) {
-        [self fireMraidEvent:@"stateChanged" withParams:self.mraidState];
-    }
-}
+//- (void)didResize:(BOOL)isModal {
+//    if (self.isMRAID) {
+//        [self fireMraidEvent:TAPIT_MRAID_EVENT_STATECHANGE withParams:self.mraidState];
+//    }
+//}
 
 - (void)syncMraidState {
     // pass over isVisible, placement type, state, max size, screen size, current position
@@ -193,7 +194,7 @@
     _isVisible = visible;
     
     if (self.isMRAID) {
-        [self fireMraidEvent:@"viewableChange" withParams:@"[true]"];
+        [self fireMraidEvent:TAPIT_MRAID_EVENT_STATECHANGE withParams:@"[true]"];
         [self syncMraidState];
     }
 }
@@ -328,7 +329,7 @@
 //            self.superview.frame = frame;
 //            self.bounds = CGRectMake(0,0,frame.size.width,frame.size.height);
 //        }
-        [self fireMraidEvent:@"sizeChange" withParams:params];
+        [self fireMraidEvent:TAPIT_MRAID_EVENT_SIZECHANGE withParams:params];
     }
 }
 

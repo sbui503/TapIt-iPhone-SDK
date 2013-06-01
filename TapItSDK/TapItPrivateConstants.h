@@ -26,5 +26,17 @@
 #define TAPIT_AD_TYPE_INTERSTITIAL @"2"
 #define TAPIT_AD_TYPE_ALERT @"10"
 
+// MRAID CONSTS
+#define TAPIT_MRAID_STATE_LOADING @"loading"
+#define TAPIT_MRAID_STATE_DEFAULT @"default"
+#define TAPIT_MRAID_STATE_RESIZED @"resized"
+#define TAPIT_MRAID_STATE_EXPANDED @"expanded"
+#define TAPIT_MRAID_STATE_HIDDEN @"hidden"
+
+#define TAPIT_MRAID_EVENT_READY @"ready"
+#define TAPIT_MRAID_EVENT_STATECHANGE @"stateChange"
+#define TAPIT_MRAID_EVENT_SIZECHANGE @"sizeChange"
+#define TAPIT_MRAID_EVENT_VIEWABLECHANGE @"viewableChange"
+#define TAPIT_MRAID_EVENT_ERROR @"error"
 
 #endif

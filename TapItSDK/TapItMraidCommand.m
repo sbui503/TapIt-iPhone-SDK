@@ -70,8 +70,8 @@
     NSLog(@"MRAID CLOSE");
     
     [delegate mraidClose];
-    self.adView.mraidState = @"closed";
-    [self.adView syncMraidState];
+//    self.adView.mraidState = @"closed";
+//    [self.adView syncMraidState];
 }
 
 @end

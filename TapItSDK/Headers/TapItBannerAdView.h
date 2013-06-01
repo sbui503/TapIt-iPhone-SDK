@@ -21,6 +21,7 @@
 @property (assign, nonatomic) BOOL showLoadingOverlay;
 @property (assign, nonatomic) BOOL shouldReloadAfterTap;
 @property (readonly) BOOL isServingAds;
+@property (readonly) BOOL isLoading;
 @property (assign) TapItBannerHideDirection hideDirection;
 @property (assign, nonatomic) UIViewController *presentingController;
 @property NSUInteger locationPrecision;
