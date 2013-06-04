@@ -28,8 +28,6 @@
 
 - (void)repositionToInterfaceOrientation:(UIInterfaceOrientation)orientation;
 
-- (void)didResize:(BOOL)isModal;
-
 - (void)setScrollable:(BOOL)scrollable;
 //- (void)loadHTMLString:(NSString *)string;
 - (void)loadData:(NSDictionary *)data;

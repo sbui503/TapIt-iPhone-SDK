@@ -70,8 +70,6 @@
     NSLog(@"MRAID CLOSE");
     
     [delegate mraidClose];
-//    self.adView.mraidState = @"closed";
-//    [self.adView syncMraidState];
 }
 
 @end
@@ -150,7 +148,8 @@
 }
 
 - (void)executeWithParams:(NSDictionary *)params andDelegate:(id<TapItMraidDelegate>)delegate {
-    [delegate mraidUseCustomCloseButton:YES];
+    BOOL useCustomClose = [(NSNumber *)[params objectForKey:@"useCustomClose"] boolValue];
+    [delegate mraidUseCustomCloseButton:useCustomClose];
 }
 
 @end

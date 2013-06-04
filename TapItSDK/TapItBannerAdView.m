@@ -251,8 +251,6 @@
     }
 }
 
-//TODO: move animation code into a more appropriate place
-//TODO: implement more transitions such as slide, fade, etc...
 - (void)didLoadAdView:(TapItAdView *)theAdView {
     TapItAdView *oldAd = [self.adView retain];
     self.alpha = 1.0;
@@ -261,13 +259,6 @@
     [self.adView setIsVisible:YES];
     
     if (self.animated) {
-//        // mask the ad area so we can slide it away
-//        // mask should be reset here, just in case the ad size changes
-//        CAShapeLayer *maskLayer = [CAShapeLayer layer];
-//        UIBezierPath *path = [UIBezierPath bezierPathWithRect:CGRectMake(0, 0, self.adView.frame.size.width, self.adView.frame.size.height)
-//        maskLayer.path = path.CGPath;
-//        self.layer.mask = maskLayer;
-
         UIViewAnimationTransition trans = (nil != self.adView ? [self getRandomTransition] : UIViewAnimationTransitionCurlDown);
         [UIView animateWithDuration:2
                               delay:0.0
@@ -344,6 +335,7 @@
 
 - (void)pause {
     [self cancelAds];
+    isServingAds = YES;
 }
 
 #pragma mark -
@@ -358,51 +350,6 @@
 
 - (UIViewController *)mraidPresentingViewController {
     return self.presentingController;
-}
-
-- (void)mraidClose {
-    
-    if([@"default" isEqualToString:self.adView.mraidState]) {
-        // transition to hidden state
-        [self hide];
-        self.adView.mraidState = TAPIT_MRAID_STATE_HIDDEN;
-    }
-    else {
-        // transition to default state
-        if (self.delegate && [self.delegate respondsToSelector:@selector(tapitBannerAdViewActionWillFinish:)]) {
-            [self.delegate tapitBannerAdViewActionWillFinish:self];
-        }
-
-        [self hideCloseButton];
-        
-        if (vc) {
-            [vc dismissViewControllerAnimated:NO completion:^{
-                [vc release]; vc = nil;
-            }];
-        }
-        
-        if (self.secondAdView) {
-            self.secondAdView = nil;
-        }
-        else {
-            // re-attach the ad view to the banneradview container
-            [self.adView removeFromSuperview];
-            [self addSubview:self.adView];
-            self.adView.frame = self.bounds;
-        }
-        self.adView.mraidState = TAPIT_MRAID_STATE_DEFAULT;
-    
-        if (self.delegate && [self.delegate respondsToSelector:@selector(tapitBannerAdViewActionDidFinish:)]) {
-            [self.delegate tapitBannerAdViewActionDidFinish:self];
-        }
-
-        [self startBannerRotationTimerForNormalOrError:YES];
-    }
-    
-    [self.adView syncMraidState];
-    [self.adView fireMraidEvent:TAPIT_MRAID_EVENT_STATECHANGE withParams:self.adView.mraidState];
-    
-    NSLog(@"adView's super: %@", self.adView.superview);
 }
 
 - (void)mraidAllowOrientationChange:(BOOL)isOrientationChangeAllowed andForceOrientation:(TapItMraidForcedOrientation)forcedOrientation {
@@ -429,13 +376,10 @@
     }
     
     TapItAdView *theView = self.secondAdView ? self.secondAdView : self.adView;
-//    theView.layer.borderColor = [[UIColor redColor] CGColor];
-//    theView.layer.borderWidth = 1.0;
 
     UIWindow *keyWindow = TapItKeyWindow();
     if (theView.superview != keyWindow) {
         // move adview onto UIWindow
-//        CGRect transFrame = [keyWindow convertRect:self.adView.bounds fromView:self.adView];
         CGRect transFrame = [keyWindow convertRect:self.adView.bounds fromView:self.adView];
         theView.frame = transFrame;
         [theView removeFromSuperview];
@@ -498,11 +442,13 @@
     }
 }
 
-- (void)mraidCollapse {
-    // pop fullscreen view controller, and place the adView back into the bannerAdView container
-}
-
 - (void)mraidOpen:(NSString *)urlStr {
+    BOOL shouldLoad = YES;
+    if ([self.delegate respondsToSelector:@selector(tapitBannerAdViewActionShouldBegin:willLeaveApplication:)]) {
+        // app has something to say about allowing tap to proceed...
+        shouldLoad = [self.delegate tapitBannerAdViewActionShouldBegin:self willLeaveApplication:NO];
+    }
+
     [self openURLInFullscreenBrowser:[NSURL URLWithString:urlStr]];
 }
 
@@ -515,24 +461,47 @@
     }
 }
 
-- (void)showCloseButton {
-    if (!self.closeButton) {
-
-        UIImage *closeButtonBackground = [UIImage imageNamed:@"TapIt.bundle/interstitial_close_button.png"];
-        self.closeButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        //    self.closeButton.backgroundColor = [UIColor redColor];
-        
-        self.closeButton.imageView.contentMode = UIViewContentModeCenter;
-        [self.closeButton setImage:closeButtonBackground forState:UIControlStateNormal];
-        
-        [self.closeButton addTarget:self action:@selector(closeTapped:) forControlEvents:UIControlEventTouchUpInside];
-        [self.adView addSubview:self.closeButton];
+- (void)mraidClose {
+    
+    if([@"default" isEqualToString:self.adView.mraidState]) {
+        // transition to hidden state
+        [self hide];
+        self.adView.mraidState = TAPIT_MRAID_STATE_HIDDEN;
     }
-
-    CGRect appFrame = TapItApplicationFrame(TapItInterfaceOrientation());
-    self.closeButton.frame = CGRectMake(appFrame.size.width - 50, 0, 50, 50);
-
-    [self bringSubviewToFront:self.closeButton];
+    else {
+        // transition to default state
+        if (self.delegate && [self.delegate respondsToSelector:@selector(tapitBannerAdViewActionWillFinish:)]) {
+            [self.delegate tapitBannerAdViewActionWillFinish:self];
+        }
+        
+        [self hideCloseButton];
+        
+        if (vc) {
+            [vc dismissViewControllerAnimated:NO completion:^{
+                [vc release]; vc = nil;
+            }];
+        }
+        
+        if (self.secondAdView) {
+            self.secondAdView = nil;
+        }
+        else {
+            // re-attach the ad view to the banneradview container
+            [self.adView removeFromSuperview];
+            [self addSubview:self.adView];
+            self.adView.frame = self.bounds;
+        }
+        self.adView.mraidState = TAPIT_MRAID_STATE_DEFAULT;
+        
+        if (self.delegate && [self.delegate respondsToSelector:@selector(tapitBannerAdViewActionDidFinish:)]) {
+            [self.delegate tapitBannerAdViewActionDidFinish:self];
+        }
+        
+        [self startBannerRotationTimerForNormalOrError:YES];
+    }
+    
+    [self.adView syncMraidState];
+    [self.adView fireMraidEvent:TAPIT_MRAID_EVENT_STATECHANGE withParams:self.adView.mraidState];
 }
 
 - (void)closeTapped:(id)sender {
@@ -540,6 +509,25 @@
     [self mraidClose];
 }
 
+- (void)showCloseButton {
+    if (!self.closeButton) {
+
+        UIImage *closeButtonBackground = [UIImage imageNamed:@"TapIt.bundle/interstitial_close_button.png"];
+        self.closeButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        
+        self.closeButton.imageView.contentMode = UIViewContentModeCenter;
+        [self.closeButton setImage:closeButtonBackground forState:UIControlStateNormal];
+        
+        [self.closeButton addTarget:self action:@selector(closeTapped:) forControlEvents:UIControlEventTouchUpInside];
+        [self.adView addSubview:self.closeButton];
+        self.closeButton.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleLeftMargin;
+
+        CGRect appFrame = TapItApplicationFrame(TapItInterfaceOrientation());
+        self.closeButton.frame = CGRectMake(appFrame.size.width - 50, 0, 50, 50);
+    }
+
+    [self bringSubviewToFront:self.closeButton];
+}
 
 - (void)hideCloseButton {
     if (!self.closeButton) {
@@ -555,32 +543,26 @@
     int transIdx = random() % 5;
     switch (transIdx) {
         case 0:
-//            NSLog(@"UIViewAnimationTransitionCurlUp");
             return UIViewAnimationTransitionCurlUp;
             break;
             
         case 1:
-//            NSLog(@"UIViewAnimationTransitionCurlDown");
             return UIViewAnimationTransitionCurlDown;
             break;
             
         case 2:
-//            NSLog(@"UIViewAnimationTransitionFlipFromLeft");
             return UIViewAnimationTransitionFlipFromLeft;
             break;
             
         case 3:
-//            NSLog(@"UIViewAnimationTransitionFlipFromRight");
             return UIViewAnimationTransitionFlipFromRight;
             break;
             
         case 4:
-//            NSLog(@"UIViewAnimationTransitionNone");
             return UIViewAnimationTransitionNone;
             break;
             
         default:
-//            NSLog(@"UIViewAnimationTransitionNone");
             return UIViewAnimationTransitionNone;
             break;
     }
@@ -730,30 +712,6 @@
 }
 
 #pragma mark -
-
-- (void)layoutSubviews {
-    NSLog(@"layoutSubviews");
-    if ([TAPIT_MRAID_STATE_EXPANDED isEqualToString:self.adView.mraidState]) {
-        self.adView.backgroundColor = [UIColor redColor];
-        self.backgroundColor = [UIColor greenColor]; 
-        NSLog(@"we should resize adview");
-//        UIInterfaceOrientation orientation = TapItInterfaceOrientation();
-//        CGRect frame = TapItApplicationFrame(orientation);
-//        self.adView.frame = frame;
-        NSLog(@"frame is: %@", NSStringFromCGRect(self.frame));
-        NSLog(@"bounds is: %@", NSStringFromCGRect(self.bounds));
-        NSLog(@"adview frame is: %@", NSStringFromCGRect(self.adView.frame));
-        NSLog(@"adview bounds is: %@", NSStringFromCGRect(self.adView.bounds));
-//        self.adView.frame = self.bounds;
-        CGRect frame = self.bounds;
-//        CGFloat tmp = frame.origin.x;
-//        frame.origin.x = frame.origin.y;
-//        frame.origin.y = tmp;
-        self.adView.frame = frame;
-        NSLog(@"new adview frame is: %@", NSStringFromCGRect(self.adView.frame));
-        NSLog(@"new adview bounds is: %@", NSStringFromCGRect(self.adView.bounds));
-    }
-}
 
 - (void)dealloc {
     [vc release]; vc = nil;

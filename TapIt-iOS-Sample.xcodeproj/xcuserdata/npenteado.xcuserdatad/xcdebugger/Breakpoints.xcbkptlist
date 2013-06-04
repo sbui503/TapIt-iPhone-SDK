@@ -8,11 +8,11 @@
          ignoreCount = "0"
          continueAfterRunningActions = "No"
          filePath = "TapItSDK/TapItBannerAdView.m"
-         timestampString = "391760731.34583"
+         timestampString = "391989385.738983"
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
-         startingLineNumber = "461"
-         endingLineNumber = "461"
+         startingLineNumber = "405"
+         endingLineNumber = "405"
          landmarkName = "-mraidResize:withUrl:isModal:useCustomClose:"
          landmarkType = "5">
       </FileBreakpoint>
