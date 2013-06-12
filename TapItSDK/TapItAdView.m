@@ -20,6 +20,7 @@
         [self setScrollable:NO];
         self.delegate = self; // UIWebViewDelegate
         self.isLoaded = NO;
+        self.isVisible = NO;
         self.interceptPageLoads = YES;
         self.mraidState = TAPIT_MRAID_STATE_LOADING;
 //        self.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
@@ -67,35 +68,8 @@
     NSString *adHtml = [NSString stringWithString:[adData objectForKey:@"html"]];
     NSRange range = [adHtml rangeOfString:@"mraid.js" options:NSCaseInsensitiveSearch];
     if (range.location != NSNotFound) {
+        //TODO: imbed mraid.js in bundle?
         adHtml = [NSString stringWithFormat:@"%@%@", @"<script type=\"text/javascript\" src=\"http://dev.tapit.com/~npenteado/mraid/mraid.js\"></script>", adHtml];
-        //TODO for testing:
-        adHtml = [NSString stringWithFormat:@"%@%@", adHtml, @"<script type=\"text/javascript\">"
-                  @"console.log('testing block entered!'); "
-                  @"if (mraid.getState() === 'loading') {"
-                  @"    console.log('trying to add nicktest listener'); "
-                  @"    mraid.addEventListener('ready', nicktest);"
-                  @"} else {"
-                  @"    console.log('container is rdy, calling nicktest()');"
-                  @"    nicktest();"
-                  @"}"
-                  @"function nicktest() {"
-                  @"    var expProps = mraid.getExpandProperties();"
-                  @"    console.debug('NICKTEST:' + JSON.stringify(expProps));"
-//                  @"    expProps.useCustomClose = false;"
-//                  @"    mraid.setExpandProperties(expProps);"
-//                  @"    mraid.useCustomClose(false);"
-                  @"}"
-                  @"console.log('adding nickexpand listener');"
-                  @"mraid.addEventListener('stateChange', nickexpand);"
-                  @"function nickexpand(state) { "
-                  @"    console.log('state change!: ' + state);"
-                  @"    if(state == 'expanded') { "
-                  @"        console.log('expanded!');"
-                  @"        setTimeout(function() {console.log('ding!'); mraid.useCustomClose(false);}, 3000);"
-                  @"        setTimeout(function() {console.log('dong!'); mraid.useCustomClose(true);}, 5000);"
-                  @"    }"
-                  @"}"
-                  @"</script>"];
         self.isMRAID = YES;
         self.interceptPageLoads = NO;
     }
@@ -146,7 +120,7 @@
         return NO;
     }
 
-    NSLog(@"shouldStartLoadWithRequest: %@", request.URL.absoluteURL);
+    NSLog(@"shouldStartLoadWithRequest: %@", request.URL);
 
     if ([request.URL.absoluteString hasPrefix:@"applewebdata://"]) {
         NSLog(@"Allowing applewebdata: %@", request.URL);
@@ -184,12 +158,6 @@
 #pragma mark -
 #pragma mark MRAID
 
-//- (void)didResize:(BOOL)isModal {
-//    if (self.isMRAID) {
-//        [self fireMraidEvent:TAPIT_MRAID_EVENT_STATECHANGE withParams:self.mraidState];
-//    }
-//}
-
 - (void)syncMraidState {
     // pass over isVisible, placement type, state, max size, screen size, current position
     
@@ -201,13 +169,12 @@
     NSNumber *x = [NSNumber numberWithFloat:self.frame.origin.x];
     NSNumber *y = [NSNumber numberWithFloat:self.frame.origin.x];
     NSDictionary *state = [NSDictionary dictionaryWithObjectsAndKeys:
-                           [NSNumber numberWithBool:!self.isHidden], @"isVisible",
+                           [NSNumber numberWithBool:self.isVisible], @"isVisible",
                            self.mraidState, @"state",
                            height, @"height",
                            width, @"width",
                            x, @"x",
                            y, @"y",
-                           
                            placementType, @"placementType",
                            nil];
     NSLog(@"Syncing this state: %@", state);
@@ -221,14 +188,13 @@
     _isVisible = visible;
     
     if (self.isMRAID) {
-        [self fireMraidEvent:TAPIT_MRAID_EVENT_STATECHANGE withParams:@"[true]"];
+        [self fireMraidEvent:TAPIT_MRAID_EVENT_VIEWABLECHANGE withParams:@"[true]"];
         [self syncMraidState];
     }
 }
 
 - (void)handleNativeCall:(NSURL *)url {
     NSString *commandStr = url.host;
-//    NSDictionary *params = url.
     
     NSString * q = [url query];
     NSArray * pairs = [q componentsSeparatedByString:@"&"];
@@ -246,7 +212,6 @@
         NSLog(@"%@", params);
     }
     
-    //TODO dispatch command
     TapItMraidCommand *command = [TapItMraidCommand command:commandStr];
     command.adView = self;
     
@@ -351,11 +316,6 @@
         // fire size change
         CGRect frame = TapItApplicationFrame(orientation);
         NSString *params = [NSString stringWithFormat:@"[%i, %i]", (int)frame.size.width, (int)frame.size.height];
-//        if ([@"expanded" isEqualToString:self.mraidState]) {
-//            // resize the adview
-//            self.superview.frame = frame;
-//            self.bounds = CGRectMake(0,0,frame.size.width,frame.size.height);
-//        }
         [self fireMraidEvent:TAPIT_MRAID_EVENT_SIZECHANGE withParams:params];
     }
 }
@@ -365,6 +325,7 @@
 
 - (void)dealloc {
     [tapitRequest release], tapitRequest = nil;
+    self.mraidDelegate = nil;
     [super dealloc];
 }
 

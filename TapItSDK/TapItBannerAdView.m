@@ -219,10 +219,10 @@
         maskLayer.path = path.CGPath;
         self.layer.mask = maskLayer;
         
-        UIViewAnimationTransition trans = UIViewAnimationTransitionNone;
+        UIViewAnimationOptions optns = UIViewAnimationOptionCurveEaseOut;
         [UIView animateWithDuration:0.5
                               delay:0.0
-                            options:trans
+                            options:optns
                          animations:^{
                              if (self.hideDirection == TapItBannerHideNone) {
                                  self.alpha = 0.0;
@@ -371,8 +371,13 @@
     
     if (url) {
         // load content as a two part creative
-        self.secondAdView = [[TapItAdView alloc] initWithFrame:self.adView.frame];
-        //TODO: load secondAdView content
+        TapItAdView *sav = [[TapItAdView alloc] initWithFrame:self.adView.frame];
+        self.secondAdView = sav;
+        [sav release];
+
+        NSURLRequest *urlreq = [[NSURLRequest alloc] initWithURL:url];
+        [self.secondAdView loadRequest:urlreq];
+        [urlreq release];
     }
     
     TapItAdView *theView = self.secondAdView ? self.secondAdView : self.adView;
@@ -398,8 +403,6 @@
                              CGRect translatedFrame = CGRectMake(frame.origin.y, frame.origin.x, frame.size.height, frame.size.width);
                              theView.frame = translatedFrame;
                          }
-                         
-                         //TODO: handle orientation transform?
                      }
                      completion:^(BOOL finished) {
                          if (isModal) {
@@ -449,7 +452,14 @@
         shouldLoad = [self.delegate tapitBannerAdViewActionShouldBegin:self willLeaveApplication:NO];
     }
 
-    [self openURLInFullscreenBrowser:[NSURL URLWithString:urlStr]];
+    if (shouldLoad) {
+        [self openURLInFullscreenBrowser:[NSURL URLWithString:urlStr]];
+    }
+    else {
+        if (self.adView.isMRAID) {
+            [self.adView fireMraidEvent:@"error" withParams:@"[\"Application declined to open browser\", \"open\"]"];
+        }
+    }
 }
 
 - (void)mraidUseCustomCloseButton:(BOOL)useCustomCloseButton {

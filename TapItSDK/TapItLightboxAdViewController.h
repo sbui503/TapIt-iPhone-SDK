@@ -15,4 +15,7 @@
 @property (retain, nonatomic) UIButton *closeButton;
 @property (retain, nonatomic) NSURL *tappedURL;
 
+- (void)showCloseButton;
+- (void)hideCloseButton;
+
 @end

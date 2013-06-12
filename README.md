@@ -1,4 +1,5 @@
 *** This branch is experimental; don't expect anything to work yet! ***
+Because this is an experimental branch, you'll need to build from source, static libs aren't updated!
 
 
 TapIt iOS SDK

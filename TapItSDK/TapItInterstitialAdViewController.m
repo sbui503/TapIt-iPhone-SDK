@@ -17,13 +17,14 @@
     UIActivityIndicatorView *loadingSpinner;
 }
 
-@synthesize animated, autoReposition, adView, tapitDelegate;
+@synthesize animated, autoReposition, adView, tapitDelegate, closeButton, tappedURL;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
         // Custom initialization
+        self.closeButton = nil;
         loadingSpinner = [[UIActivityIndicatorView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
         [loadingSpinner sizeToFit];
         loadingSpinner.hidesWhenStopped = YES;
@@ -36,10 +37,69 @@
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
+    
+    [self.adView setCenter:self.view.center];
+    [self.view addSubview:(UIView *)self.adView];
+    self.view.backgroundColor = [UIColor blackColor];
 }
+
+
+
+
+- (void)showCloseButton {
+    if (!self.closeButton) {
+        
+        UIImage *closeButtonBackground = [UIImage imageNamed:@"TapIt.bundle/interstitial_close_button.png"];
+        self.closeButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        
+        self.closeButton.imageView.contentMode = UIViewContentModeCenter;
+        [self.closeButton setImage:closeButtonBackground forState:UIControlStateNormal];
+        
+        [self.closeButton addTarget:self action:@selector(closeTapped:) forControlEvents:UIControlEventTouchUpInside];
+        [self.adView addSubview:self.closeButton];
+        self.closeButton.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleLeftMargin;
+        
+        CGRect appFrame = TapItApplicationFrame(TapItInterfaceOrientation());
+        self.closeButton.frame = CGRectMake(appFrame.size.width - 50, 0, 50, 50);
+    }
+    
+    [self.adView bringSubviewToFront:self.closeButton];
+}
+
+- (void)hideCloseButton {
+    if (!self.closeButton) {
+        return;
+    }
+    [self.closeButton removeFromSuperview];
+    self.closeButton = nil;
+}
+
+
+
+- (void)closeTapped:(id)sender {
+    id<TapItInterstitialAdDelegate> tDel = [self.tapitDelegate retain];
+    [tDel tapitInterstitialAdActionWillFinish:nil];
+    [self dismissModalViewControllerAnimated:self.animated];
+    [tDel tapitInterstitialAdActionDidFinish:nil];
+    [tDel tapitInterstitialAdDidUnload:nil];
+    [tDel release];
+    
+    //    [self dismissViewControllerAnimated:self.animated completion:^{
+    //        [tDel tapitInterstitialAdActionDidFinish:nil];
+    //        [tDel tapitInterstitialAdDidUnload:nil];
+    //        [tDel release];
+    //    }];
+}
+
+
+
+
+
+
 
 - (void)viewDidUnload
 {
+    self.closeButton = nil;
     [super viewDidUnload];
     // Release any retained subviews of the main view.
 }
@@ -95,6 +155,17 @@
     else {
         [self.adView setFrame:CGRectMake(x, y, w, h)];
     }
+}
+
+
+#pragma mark -
+
+- (void)dealloc
+{
+    self.adView = nil;
+    self.closeButton = nil;
+    self.tappedURL = nil;
+    [super dealloc];
 }
 
 @end

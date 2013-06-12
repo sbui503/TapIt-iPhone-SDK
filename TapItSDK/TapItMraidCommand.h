@@ -55,5 +55,5 @@
 
 @end
 
-@interface TapItMraidAdCalendarEvent : TapItMraidCommand <EKEventEditViewDelegate>
-@end
+//@interface TapItMraidAdCalendarEvent : TapItMraidCommand <EKEventEditViewDelegate>
+//@end

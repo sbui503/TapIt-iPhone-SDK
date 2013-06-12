@@ -33,7 +33,7 @@
 - (void)loadData:(NSDictionary *)data;
 
 
-- (void)setIsVisible:(BOOL)visible;
+//- (void)setIsVisible:(BOOL)visible;
 
 
 - (void)syncMraidState;

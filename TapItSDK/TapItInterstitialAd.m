@@ -18,15 +18,16 @@
 #import "TapItLightboxAdViewController.h"
 #import "TapItBrowserController.h"
 
-@interface TapItInterstitialAd() <TapItAdManagerDelegate> 
+@interface TapItInterstitialAd() <TapItAdManagerDelegate, TapItMraidDelegate> 
 
 @property (retain, nonatomic) TapItRequest *adRequest;
 @property (retain, nonatomic) TapItAdView *adView;
 @property (retain, nonatomic) TapItAdManager *adManager;
 @property (retain, nonatomic) TapItBannerAdView *bannerView;
 @property (retain, nonatomic) UIView *presentingView;
-@property (retain, nonatomic) TapItLightboxAdViewController *adController;
+@property (retain, nonatomic) TapItInterstitialAdViewController *adController;
 @property (retain, nonatomic) TapItBrowserController *browserController;
+@property (assign) BOOL useCustomClose;
 
 @end
 
@@ -36,7 +37,7 @@
     BOOL statusBarVisibilityChanged;
 }
 
-@synthesize delegate, adRequest, adView, adManager, allowedAdTypes, bannerView, presentingView, animated, autoReposition, showLoadingOverlay, adController, browserController, presentingController;
+@synthesize delegate, adRequest, adView, adManager, allowedAdTypes, bannerView, presentingView, animated, autoReposition, showLoadingOverlay, adController, browserController, presentingController, useCustomClose;
 
 - (id)init {
     self = [super init];
@@ -50,30 +51,13 @@
         self.showLoadingOverlay = NO;
         prevStatusBarHiddenState = NO;
         statusBarVisibilityChanged = NO;
+        self.useCustomClose = NO;
     }
     return self;
 }
 
 - (BOOL)loaded {
     return isLoaded;
-}
-
-- (void)hideStatusBar {
-//    UIApplication *app = [UIApplication sharedApplication];
-//    BOOL currentState = app.statusBarHidden;
-//    if (!currentState) {
-//        app.statusBarHidden = YES;
-//        prevStatusBarHiddenState = currentState;
-//        statusBarVisibilityChanged = YES;
-//    }
-}
-
-- (void)resetStatusBar {
-//    if (statusBarVisibilityChanged) {
-//        UIApplication *app = [UIApplication sharedApplication];
-//        app.statusBarHidden = prevStatusBarHiddenState;
-//        statusBarVisibilityChanged = NO;
-//    }
 }
 
 - (BOOL)loadInterstitialForRequest:(TapItRequest *)request {
@@ -92,9 +76,8 @@
 }
 
 - (void)presentFromViewController:(UIViewController *)controller {
-    [self hideStatusBar];
-
-    adController = [[TapItLightboxAdViewController alloc] init];
+//    adController = [[TapItLightboxAdViewController alloc] init];
+    adController = [[TapItInterstitialAdViewController alloc] init];
     self.adController.adView = self.adView;
     self.adController.animated = self.animated;
     self.adController.autoReposition = self.autoReposition;
@@ -103,6 +86,14 @@
     self.presentingController = controller;
 
     [controller presentModalViewController:self.adController animated:YES];
+    if (self.adView.isMRAID) {
+        self.adView.isVisible = YES;
+        [self.adView fireMraidEvent:TAPIT_MRAID_EVENT_VIEWABLECHANGE withParams:@"[true]"];
+        [self.adView syncMraidState];
+        if (!self.useCustomClose) {
+            [self.adController showCloseButton];
+        }
+    }
 }
 
 #pragma mark -
@@ -117,6 +108,8 @@
 - (void)didLoadAdView:(TapItAdView *)theAdView {
     self.adView = theAdView;
     isLoaded = YES;
+    self.adView.mraidDelegate = self;
+
     if ([self.delegate respondsToSelector:@selector(tapitInterstitialAdDidLoad:)]) {
         [self.delegate tapitInterstitialAdDidLoad:self];
     }
@@ -143,8 +136,9 @@
 }
 
 - (void)tapitInterstitialAdDidUnload:(TapItInterstitialAd *)interstitialAd {
-    [self resetStatusBar];
-
+    if (self.adView) {
+        self.adView = nil;
+    }
     if (self.delegate) {
         if ([self.delegate respondsToSelector:@selector(tapitInterstitialAdDidUnload:)]) {
             [self.delegate tapitInterstitialAdDidUnload:self];
@@ -165,24 +159,6 @@
     }
 }
 
-//- (void)tapitInterstitialAdWillLoad:(TapItInterstitialAd *)interstitialAd {
-//    //TODO do we need this?  dev will know when an interstitial is loaded because they fired a load event!
-//    if (self.delegate) {
-//        if ([self.delegate respondsToSelector:@selector(tapitInterstitialAdWillLoad:)]) {
-//            [self.delegate tapitInterstitialAdWillLoad:self];
-//        }
-//    }
-//}
-//
-//- (void)tapitInterstitialAdDidLoad:(TapItInterstitialAd *)interstitialAd {
-//    //TODO not needed, covered by - (void)didLoadAdView:(TapItAdView *)theAdView above...
-//    if (self.delegate) {
-//        if ([self.delegate respondsToSelector:@selector(tapitInterstitialAdDidLoad:)]) {
-//            [self.delegate tapitInterstitialAdDidLoad:self];
-//        }
-//    }
-//}
-//
 - (BOOL)tapitInterstitialAdActionShouldBegin:(TapItInterstitialAd *)interstitialAd willLeaveApplication:(BOOL)willLeave {
     if (self.delegate) {
         if ([self.delegate respondsToSelector:@selector(tapitInterstitialAdActionShouldBegin:willLeaveApplication:)]) {
@@ -201,6 +177,10 @@
 }
 
 - (void)tapitInterstitialAdActionDidFinish:(TapItInterstitialAd *)interstitialAd {
+    if (self.adView.isMRAID) {
+        [self mraidClose];
+    }
+
     if (self.delegate) {
         if ([self.delegate respondsToSelector:@selector(tapitInterstitialAdActionDidFinish:)]) {
             [self.delegate tapitInterstitialAdActionDidFinish:self];
@@ -209,8 +189,61 @@
 }
 
 
+#pragma mark -
+#pragma mark MRAID methods
+
+- (NSDictionary *)mraidQueryState {
+    NSDictionary *state = [NSDictionary dictionaryWithObjectsAndKeys:
+                           @"interstitial", @"placementType",
+                           nil];
+    return state;
+}
 
 
+- (UIViewController *)mraidPresentingViewController {
+    return self.presentingController;
+}
+
+- (void)mraidClose {
+    self.adView.mraidState = TAPIT_MRAID_STATE_HIDDEN;
+    [self.adView syncMraidState];
+    [self.adView fireMraidEvent:TAPIT_MRAID_EVENT_STATECHANGE withParams:self.adView.mraidState];
+}
+
+- (void)mraidAllowOrientationChange:(BOOL)isOrientationChangeAllowed andForceOrientation:(TapItMraidForcedOrientation)forcedOrientation {
+    
+}
+
+- (void)mraidResize:(CGRect)frame withUrl:(NSURL *)url isModal:(BOOL)isModal useCustomClose:(BOOL)useCustomClose {
+    // unused for interstitials
+}
+
+- (void)mraidOpen:(NSString *)urlStr {
+    BOOL shouldLoad = YES;
+    if ([self.delegate respondsToSelector:@selector(tapitInterstitialAdActionShouldBegin:willLeaveApplication:)]) {
+        // app has something to say about allowing tap to proceed...
+        shouldLoad = [self.delegate tapitInterstitialAdActionShouldBegin:self willLeaveApplication:NO];
+    }
+    
+    if (shouldLoad) {
+        [self openURLInFullscreenBrowser:[NSURL URLWithString:urlStr]];
+    }
+    else {
+        if (self.adView.isMRAID) {
+            [self.adView fireMraidEvent:@"error" withParams:@"[\"Application declined to open browser\", \"open\"]"];
+        }
+    }
+}
+
+- (void)mraidUseCustomCloseButton:(BOOL)useCustomCloseButton {
+    self.useCustomClose = useCustomCloseButton;
+    if (useCustomCloseButton) {
+        [self.adController hideCloseButton];
+    }
+    else {
+        [self.adController showCloseButton];
+    }
+}
 
 
 #pragma mark -
@@ -262,7 +295,6 @@
 }
 
 -(void)browserControllerWillDismiss:(TapItBrowserController *)browserController {
-    [self resetStatusBar];
     if (self.delegate && [self.delegate respondsToSelector:@selector(tapitInterstitialAdActionWillFinish:)]) {
         [self.delegate tapitInterstitialAdActionWillFinish:self];
     }

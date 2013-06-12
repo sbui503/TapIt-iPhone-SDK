@@ -35,9 +35,6 @@ typedef enum {
  */
 - (NSDictionary *)mraidQueryState;
 
-
-- (UIViewController *)mraidPresentingViewController;
-
 /*
  * tell delegate to close the ad
  */
@@ -62,5 +59,9 @@ typedef enum {
  * tell delegate if it should render a close button over the ad or not
  */
 - (void)mraidUseCustomCloseButton:(BOOL)useCustomCloseButton;
+
+@optional
+
+- (UIViewController *)mraidPresentingViewController;
 
 @end

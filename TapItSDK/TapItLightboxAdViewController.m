@@ -27,6 +27,7 @@
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
     if (self) {
         // Custom initialization
+        self.closeButton = nil;
     }
     return self;
 }
@@ -39,26 +40,41 @@
     [self.adView setCenter:self.view.center];
     [self.view addSubview:(UIView *)self.adView];
     self.view.backgroundColor = [UIColor blackColor];
-    
-    UIImage *closeButtonBackground = [UIImage imageNamed:@"TapIt.bundle/interstitial_close_button.png"];
-    self.closeButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    NSInteger buttonY = 0;
-    UIApplication *app = [UIApplication sharedApplication];
-    if (!app.statusBarHidden) {
-        buttonY = 22;
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+}
+
+
+- (void)showCloseButton {
+    if (!self.closeButton) {
+        
+        UIImage *closeButtonBackground = [UIImage imageNamed:@"TapIt.bundle/interstitial_close_button.png"];
+        self.closeButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        
+        self.closeButton.imageView.contentMode = UIViewContentModeCenter;
+        [self.closeButton setImage:closeButtonBackground forState:UIControlStateNormal];
+        
+        [self.closeButton addTarget:self action:@selector(closeTapped:) forControlEvents:UIControlEventTouchUpInside];
+        [self.adView addSubview:self.closeButton];
+        self.closeButton.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleLeftMargin;
+        
+        CGRect appFrame = TapItApplicationFrame(TapItInterfaceOrientation());
+        self.closeButton.frame = CGRectMake(appFrame.size.width - 50, 0, 50, 50);
     }
     
-    self.closeButton.frame = CGRectMake(0, buttonY, 44, 44);
-    self.closeButton.imageView.contentMode = UIViewContentModeCenter;
-    [self.closeButton setImage:closeButtonBackground forState:UIControlStateNormal];
-    
-    CGRect frame = self.closeButton.frame;
-    self.closeButton.frame = frame;
-    [self.closeButton addTarget:self action:@selector(closeTapped:) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:closeButton];
-        
-    self.navigationBarHidden = YES;
+    [self.adView bringSubviewToFront:self.closeButton];
 }
+
+- (void)hideCloseButton {
+    if (!self.closeButton) {
+        return;
+    }
+    [self.closeButton removeFromSuperview];
+    self.closeButton = nil;
+}
+
+
 
 - (void)closeTapped:(id)sender {
     id<TapItInterstitialAdDelegate> tDel = [self.tapitDelegate retain];
